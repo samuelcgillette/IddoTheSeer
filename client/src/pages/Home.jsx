@@ -1,17 +1,22 @@
 import { useRequireUser } from "../hooks/useRequireUser";
+import { useState } from "react";
 import logo from "../assets/logo.png";
 
 function Home() {
-  const user = useRequireUser();
-
-  if (!user) {
-    return null;
-  }
-
+  const [prompt, setPrompt] = useState("");
   return (
-    <div style={{ textAlign: "center" }}>
-      <h2>Welcome, {user.username}!</h2>
-      <img src={logo} alt="My App" className="home-logo" />
+    <div>
+      <div>
+        <input
+          type="text"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          placeholder="Enter your prompt..."
+        />
+      </div>
+      <div style={{ textAlign: "center" }}>
+        <img src={logo} alt="My App" className="home-logo" />
+      </div>
     </div>
   );
 }
