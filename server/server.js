@@ -6,12 +6,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { create } from "express-handlebars";
 import { loadUser } from "./middleware/auth.js";
-
 import authController from "./controllers/auth.js";
-
-import { PDFParse } from 'pdf-parse';
-
-
+import { ChatOllama } from "@langchain/ollama";
+import { createAgent } from "langchain"; 
+import { getAbriviationTool, getBookText } from "./tools.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -30,6 +28,18 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(loadUser);
+
+// Initialize AI model
+const llm = new ChatOllama({
+  model: "llama3.1:8b",
+  temperature: 0,
+});
+
+// Create the Agent
+const agent = createAgent({
+  model: llm,
+  tools: [getAbriviationTool, getBookText],
+});
 
 // API Routes
 app.use("/api/auth", authController);

@@ -2,7 +2,7 @@ import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { PDFParse } from 'pdf-parse';
 
-const getAbriviationTool = tool(
+export const getAbriviationTool = tool(
     async ({ bookTitle }) => {
         console.log(`\n[System] Executing tool for book: ${bookTitle}...`);
         const bookTitles = {
@@ -45,7 +45,7 @@ const getAbriviationTool = tool(
     }
 );
 
-const getBookText = tool(
+export const getBookText = tool(
     async ({ bookAbriviation }) => {
         console.log(`getting ${bookAbriviation}`)
         const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
