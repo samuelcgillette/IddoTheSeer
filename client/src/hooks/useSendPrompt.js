@@ -5,7 +5,7 @@ export function useSendPrompt(prompt, setModelResponse) {
         async function sendPrompt() {
             if (prompt) {
                 try {
-                    const response = await fetch("/api/findreference", {
+                    const response = await fetch("/api/reference", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",

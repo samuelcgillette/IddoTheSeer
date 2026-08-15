@@ -10,6 +10,7 @@ import authController from "./controllers/auth.js";
 import { ChatOllama } from "@langchain/ollama";
 import { createAgent } from "langchain"; 
 import { getAbriviationTool, getBookText } from "./tools.js";
+import refrenceController from "./controllers/refrence.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,13 +37,14 @@ const llm = new ChatOllama({
 });
 
 // Create the Agent
-const agent = createAgent({
+export const agent = createAgent({
   model: llm,
   tools: [getAbriviationTool, getBookText],
 });
 
 // API Routes
 app.use("/api/auth", authController);
+app.use("/api/reference", refrenceController);
 
 // Serve the React app
 if (process.env.NODE_ENV === "production") {
