@@ -32,8 +32,9 @@ export const getAbriviationTool = tool(
             '2 John': '2JN',
             '3 John': '3JN',
             Jude: 'JUD',
-            Revelation: 'REV'
+            Revelations: 'REV'
         }
+        console.log(`\n[System] Found abbreviation: ${bookTitles[bookTitle]} for book: ${bookTitle}`);
         return bookTitles[bookTitle] ;
     },
     {
@@ -53,9 +54,9 @@ export const getBookText = tool(
     },
     {
         name: "get_book_text",
-        description: "Get the text of a new testament book using the abreviation from get_abriviation_tool",
+        description: "Get the text of a new testament book using the abreviation from get_abriviation_tool. Do not insert a book abreviation that is not from the get_abriviation_tool.",
         schema: z.object({
-            bookAbriviation: z.string().describe("The abreviation gotten from get_abriviation_tool")
+            bookAbriviation: z.string().describe("The abreviation recived from get_abriviation_tool. It must be all caps and the correct abreviation for the book you are trying to get the text for. ex MAT for Matthew, JHN for John, etc. Exact abreviations are found in the get_abriviation_tool.")
         }),
     }
 );

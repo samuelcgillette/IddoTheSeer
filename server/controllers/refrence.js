@@ -9,6 +9,7 @@ router.post("/", async (req, res) => {
         const response = await agent.invoke({
             messages: [{ role: "user", content: userPrompt }],
         });
+        console.log("Agent response:", response);
         const finalMessage = response.messages[response.messages.length - 1];
         res.json({ AIResponse: finalMessage.content });
     }

@@ -5,6 +5,13 @@ import { useSendPrompt } from "../hooks/useSendPrompt.js";
 function Home() {
   const [prompt, setPrompt] = useState("");
   const [modelResponse, setModelResponse] = useState("");
+  const [trigger, setTrigger] = useState(false);
+  
+  useSendPrompt(prompt,trigger, setModelResponse);
+
+  function handleSubmit(prompt, setModelResponse) {
+    setTrigger(!trigger);
+  }
   return (
     <div>
       <div>
@@ -18,7 +25,7 @@ function Home() {
       <div>
         <p>{modelResponse}</p>
       </div>
-      <button onClick={() => useSendPrompt(prompt, setModelResponse)}>Submit</button>
+      <button onClick={() => handleSubmit(prompt, setModelResponse)}>Submit</button>
       <div style={{ textAlign: "center" }}>
         <img src={logo} alt="My App" className="home-logo" />
       </div>

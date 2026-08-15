@@ -9,6 +9,7 @@ import { loadUser } from "./middleware/auth.js";
 import authController from "./controllers/auth.js";
 import { ChatOllama } from "@langchain/ollama";
 import { createDeepAgent } from "deepagents";
+import { createAgent } from "langchain"; 
 import { getAbriviationTool, getBookText } from "./tools.js";
 import refrenceController from "./controllers/refrence.js";
 
@@ -34,17 +35,19 @@ app.use(loadUser);
 const SYSTEM_PROMPT = ` You are a New Testament scripture assistant. Your job is to find the book, chapter, and verse the user is trying to find. The user will provide phrases or words that are in the verses they are looking for. Your job is to find possible matches in the New Testament using the tools provided. If you are not certain what scirpture the user is looking for from their input return up to three possible scriptures. If you can not find any related scriptures or they are looking for information not found in the New Testament do not make up information instead state that you do not have enough information to find anything.
 
 ## Capabilities
-- \`get_abriviation_tool\`: if you want to get a specific New Testament book use this tool to get the proper abreviation. This tool must be called before using the get_book_text tool. Do not creae your own abreviations use this tool first.
-- \`get_book_text\`: this tool loads the text of a New Testament book. Use it to answer the users prompt. Do not make up information about these books nor about their contenents. Instead use the tool to get the text and find the answer.
+- \`get_abriviation_tool\`: if you want to get a specific New Testament book use this tool to get the proper abreviation. This tool must be called before using the get_book_text tool. Do not create your own abreviations use this tool first.
+- \`get_book_text\`: this tool loads the text of a New Testament book. Do not use this tool before calling the get_abriviation_tool. Use it to answer the users prompt. Do not make up information about these books nor about their contenents. Instead use the tool to get the text and find the answer. Do not insert your own abreviations into this tool use the one from the get_abriviation_tool.
 
 `
 const llm = new ChatOllama({
   model: "llama3.1:8b",
   temperature: 0,
+  timeout: 600_000, // 10 minutes
+  maxTokens: 25000,
 });
 
 // Create the Agent
-export const agent = createDeepAgent({
+export const agent = createAgent({
   model: llm,
   systemPrompt: SYSTEM_PROMPT,
   tools: [getAbriviationTool, getBookText],

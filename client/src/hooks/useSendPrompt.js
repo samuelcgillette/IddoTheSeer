@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-export function useSendPrompt(prompt, setModelResponse) {
+export function useSendPrompt(prompt, trigger,setModelResponse) {
     useEffect(() => {
         async function sendPrompt() {
             if (prompt) {
@@ -21,5 +21,5 @@ export function useSendPrompt(prompt, setModelResponse) {
             }
         }
         sendPrompt();
-    }, []);
+    }, [trigger]);
 }
