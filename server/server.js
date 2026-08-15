@@ -8,7 +8,7 @@ import { create } from "express-handlebars";
 import { loadUser } from "./middleware/auth.js";
 import authController from "./controllers/auth.js";
 import { ChatOllama } from "@langchain/ollama";
-import { createAgent } from "langchain"; 
+import { createDeepAgent } from "deepagents";
 import { getAbriviationTool, getBookText } from "./tools.js";
 import refrenceController from "./controllers/refrence.js";
 
@@ -30,15 +30,23 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(loadUser);
 
-// Initialize AI model
+// Initialize AI model and system prompt
+const SYSTEM_PROMPT = ` You are a New Testament scripture assistant. Your job is to find the book, chapter, and verse the user is trying to find. The user will provide phrases or words that are in the verses they are looking for. Your job is to find possible matches in the New Testament using the tools provided. If you are not certain what scirpture the user is looking for from their input return up to three possible scriptures. If you can not find any related scriptures or they are looking for information not found in the New Testament do not make up information instead state that you do not have enough information to find anything.
+
+## Capabilities
+- \`get_abriviation_tool\`: if you want to get a specific New Testament book use this tool to get the proper abreviation. This tool must be called before using the get_book_text tool. Do not creae your own abreviations use this tool first.
+- \`get_book_text\`: this tool loads the text of a New Testament book. Use it to answer the users prompt. Do not make up information about these books nor about their contenents. Instead use the tool to get the text and find the answer.
+
+`
 const llm = new ChatOllama({
   model: "llama3.1:8b",
   temperature: 0,
 });
 
 // Create the Agent
-export const agent = createAgent({
+export const agent = createDeepAgent({
   model: llm,
+  systemPrompt: SYSTEM_PROMPT,
   tools: [getAbriviationTool, getBookText],
 });
 
