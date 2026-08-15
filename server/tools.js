@@ -1,5 +1,6 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
+import { PDFParse } from 'pdf-parse';
 
 const getAbriviationTool = tool(
     async ({ bookTitle }) => {
@@ -40,6 +41,21 @@ const getAbriviationTool = tool(
         description: "Get the correct abreviation for a New Testament book title",
         schema: z.object({
             bookTitle: z.string().describe("The New Testament book title e.g., Matthew")
+        }),
+    }
+);
+
+const getBookText = tool(
+    async ({ bookAbriviation }) => {
+        console.log(`getting ${bookAbriviation}`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
+        return await parser.getText();
+    },
+    {
+        name: "get_book_text",
+        description: "Get the text of a new testament book using the abreviation from get_abriviation_tool",
+        schema: z.object({
+            bookAbriviation: z.string().describe("The abreviation gotten from get_abriviation_tool")
         }),
     }
 );
