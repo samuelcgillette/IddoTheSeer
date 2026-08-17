@@ -39,9 +39,9 @@ export const getAbriviationTool = tool(
     },
     {
         name: "get_abriviation_tool",
-        description: "Get the correct abreviation for a New Testament book title",
+        description: "Get the correct abreviation for a bible book title",
         schema: z.object({
-            bookTitle: z.string().describe("The New Testament book title e.g., Matthew")
+            bookTitle: z.string().describe("The bible book title e.g., Matthew")
         }),
     }
 );
@@ -54,9 +54,39 @@ export const getBookText = tool(
     },
     {
         name: "get_book_text",
-        description: "Get the text of a new testament book using the abreviation from get_abriviation_tool. Do not insert a book abreviation that is not from the get_abriviation_tool.",
+        description: "Get the text of a bible book using the abreviation from get_abriviation_tool. Do not insert a book abreviation that is not from the get_abriviation_tool.",
         schema: z.object({
             bookAbriviation: z.string().describe("The abreviation recived from get_abriviation_tool. It must be all caps and the correct abreviation for the book you are trying to get the text for. ex MAT for Matthew, JHN for John, etc. Exact abreviations are found in the get_abriviation_tool.")
         }),
     }
+);
+
+export const getAllNewTestament = tool(
+    async () => {
+        console.log(`getting all new testament books`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_nt.pdf` });
+        return await parser.getText();
+    },
+    {
+        name: "get_all_new_testament",
+        description: "Get the text of all new testament books in one document. This tool is not required if you already know the names of the specific books you want to reference. Its purpose is to provide the entire New Testament if the user needs a comprehensive view.",
+        schema: z.object({}),
+    }
+
+
+);
+
+export const getAllBible = tool(
+    async () => {
+        console.log(`getting all books in the bible`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_all.pdf` });
+        return await parser.getText();
+    },
+    {
+        name: "get_all_bible",
+        description: "Get the text of the entire bible in one document. This tool is not required if you already know the names of the specific books you want to reference or if you know you need to reference the New Testament. Its purpose is to provide the entire bible the Old Testament included if the user needs a comprehensive view.",
+        schema: z.object({}),
+    }
+
+
 );
