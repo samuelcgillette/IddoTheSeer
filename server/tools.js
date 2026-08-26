@@ -34,7 +34,7 @@ export const getAbriviationTool = tool(
             Ezekiel: 'EZK',
             Daniel: 'DAN',
             Hosea: 'HOS',
-            Joel: 'JOE',
+            Joel: 'JOL',
             Amos: 'AMO',
             Obadiah: 'OBA',
             Jonah: 'JON',
