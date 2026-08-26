@@ -109,7 +109,7 @@ export const getNumberOfPages = tool(
         const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
         const result = await parser.getInfo({ parsePageInfo: true }); 
         parser.destroy();
-        return result.total;
+        return Number(result.total);
     },
     {
         name: "get_number_of_pages",
@@ -121,22 +121,53 @@ export const getNumberOfPages = tool(
 );
 
 export const getAllNewTestament = tool(
-    async () => {
+    //479 pages
+    async ({pageNumber}) => {
+        if (pageNumber < 1 || pageNumber > 479) {
+            throw new Error("Page number must be between 1 and 479 for the New Testament.");
+        }
         console.log(`getting all new testament books`)
         const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_nt.pdf` });
-        return await parser.getText();
+        const page = parser.getText({partial: [pageNumber]});
+        parser.destroy();
+        return page;
     },
     {
         name: "get_all_new_testament",
         description: "Get the text of all new testament books in one document. This tool is not required if you already know the names of the specific books you want to reference. Its purpose is to provide the entire New Testament if the user needs a comprehensive view.",
-        schema: z.object({}),
+        schema: z.object({
+            pageNumber: z.number().describe("The page number of the new testament you want to get the text for. The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the new testament text. If you want to progress through the entire new testament text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at one and increment. This number can not be greater than the total number of pages in the new testament which is 479.")
+        }),
     }
+);
 
-
+export const getOldTestament = tool(
+    //1107 pages
+    async ({pageNumber}) => {
+        if (pageNumber < 1 || pageNumber > 1107) {
+            throw new Error("Page number must be between 1 and 1107 for the Old Testament.");
+        }
+        console.log(`getting all old testament books`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_ot.pdf` });
+        const page = parser.getText({partial: [pageNumber]});
+        parser.destroy();
+        return page;
+    },
+    {
+        name: "get_old_testament",
+        description: "Get the text of all old testament books in one document. This tool is not required if you already know the names of the specific books you want to reference. Its purpose is to provide the entire Old Testament if the user needs a comprehensive view.",
+        schema: z.object({
+            pageNumber: z.number().describe("The page number of the old testament you want to get the text for. The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the old testament text. If you want to progress through the entire old testament text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at one and increment. This number can not be greater than the total number of pages in the old testament which is 1107.")
+        }),
+    }
 );
 
 export const getAllBible = tool(
-    async () => {
+    //1473 bible
+    async ({pageNumber}) => {
+        if (pageNumber < 1 || pageNumber > 1473) {
+            throw new Error("Page number must be between 1 and 1473 for the entire Bible.");
+        }
         console.log(`getting all books in the bible`)
         const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_all.pdf` });
         return await parser.getText();
@@ -144,7 +175,7 @@ export const getAllBible = tool(
     {
         name: "get_all_bible",
         description: "Get the text of the entire bible in one document. This tool is not required if you already know the names of the specific books you want to reference or if you know you need to reference the New Testament. Its purpose is to provide the entire bible the Old Testament included if the user needs a comprehensive view.",
-        schema: z.object({}),
+        schema: z.object({pageNumber: z.number().describe("The page number of the bible you want to get the text for. The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the bible text. If you want to progress through the entire bible text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at one and increment. This number can not be greater than the total number of pages in the bible which is 1473.")}),
     }
 
 
