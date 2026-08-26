@@ -10,7 +10,7 @@ import authController from "./controllers/auth.js";
 import { ChatOllama } from "@langchain/ollama";
 import { createDeepAgent } from "deepagents";
 import { createAgent } from "langchain"; 
-import { getAbriviationTool, getBookText, getAllNewTestament, getAllBible, getNumberOfPages } from "./tools.js";
+import { getAbriviationTool, getBookText, getAllNewTestament, getOldTestament, getAllBible, getNumberOfPages } from "./tools.js";
 import refrenceController from "./controllers/refrence.js";
 import { MemorySaver } from "@langchain/langgraph";
 
@@ -63,11 +63,11 @@ The first verse is the text between 1 and 2. The second verse is the text after 
 - \`get_abriviation_tool\`: if you want to get a specific bible book use this tool to get the proper abreviation. This tool must be called before using the get_book_text tool. Do not create your own abreviations use this tool first.
 - \`get_number_of_pages\`: this tool returns the total number of pages in a specific bible book. After calling get_abriviation_tool, call this before reading pages with get_book_text so you know the loop end condition.
 - \`get_book_text\`: this tool loads one page of text from a specific bible book using pageNumber. Do not use this tool before calling the get_abriviation_tool. Always use get_book_text in a loop: start at page "1", increment by 1, and continue until the scripture is found or until you reach the page total from get_number_of_pages. Make sure to pass pageNumber as a string containing digits (for example "1", "2", "3"). The pageNumber is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the book text. If you want to progress through the entire book text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at "1" and increment. This value can not be greater than the total number of pages in the book.
+- \`get_all_new_testament\`: this tool loads one page of text from the complete New Testament PDF for broad searches. Pass pageNumber as a string containing digits (for example "1", "2", "3"). The pageNumber is the page number in the PDF document, not a chapter or verse number. Start at "1" and increment by 1 for each page until you find the scripture or reach page "479".
+- \`get_old_testament\`: this tool loads one page of text from the complete Old Testament PDF for broad searches. Pass pageNumber as a string containing digits (for example "1", "2", "3"). The pageNumber is the page number in the PDF document, not a chapter or verse number. Start at "1" and increment by 1 for each page until you find the scripture or reach page "1107".
+- \`get_all_bible\`: this tool loads one page of text from the complete Bible PDF for broad searches. Pass pageNumber as a string containing digits (for example "1", "2", "3"). The pageNumber is the page number in the PDF document, not a chapter or verse number. Start at "1" and increment by 1 for each page until you find the scripture or reach page "1473".
 `
 
-// Optional broad-search tools:
-// - `get_all_new_testament`: loads all New Testament books in one document for comprehensive NT searches.
-// - `get_all_bible`: loads the entire Bible (including Old Testament) in one document for broad searches.
 const llm = new ChatOllama({
   model: "llama3.1:8b",
   temperature: 0,
@@ -80,7 +80,7 @@ const checkpointer = new MemorySaver();
 export const deepAgent = createDeepAgent({
   model: llm,
   systemPrompt: SYSTEM_PROMPT,
-  tools: [getAbriviationTool, getBookText, getNumberOfPages],
+  tools: [getAbriviationTool, getBookText, getNumberOfPages, getAllNewTestament, getOldTestament, getAllBible],
   checkpointer,
 });
 
