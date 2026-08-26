@@ -135,7 +135,7 @@ export const getAllNewTestament = tool(
     },
     {
         name: "get_all_new_testament",
-        description: "Get a page of text from all New Testament books in one document. This tool is not required if you already know the names of the specific books you want to reference. Its purpose is to provide the entire New Testament if the user needs a comprehensive view.",
+        description: "Use only when you do not know which specific Bible book contains the answer. Get a page of text from all New Testament books in one document for a broad search. If the relevant book is known, use get_book_text instead.",
         schema: z.object({
             pageNumber: z.string().describe("The page number of the New Testament you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the New Testament text. If you want to progress through the entire New Testament text you can call this tool multiple times with incrementing page numbers until the desired result is found. Start at \"1\" and increment. This value cannot be greater than 479.")
         }),
@@ -157,7 +157,7 @@ export const getOldTestament = tool(
     },
     {
         name: "get_old_testament",
-        description: "Get a page of text from all Old Testament books in one document. This tool is not required if you already know the names of the specific books you want to reference. Its purpose is to provide the entire Old Testament if the user needs a comprehensive view.",
+        description: "Use only when you do not know which specific Bible book contains the answer. Get a page of text from all Old Testament books in one document for a broad search. If the relevant book is known, use get_book_text instead.",
         schema: z.object({
             pageNumber: z.string().describe("The page number of the Old Testament you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the Old Testament text. If you want to progress through the entire Old Testament text you can call this tool multiple times with incrementing page numbers until the desired result is found. Start at \"1\" and increment. This value cannot be greater than 1107.")
         }),
@@ -179,7 +179,7 @@ export const getAllBible = tool(
     },
     {
         name: "get_all_bible",
-        description: "Get a page of text from the entire Bible in one document. This tool is not required if you already know the names of the specific books you want to reference or if you know you need to reference the New Testament. Its purpose is to provide the entire Bible, including the Old Testament, if the user needs a comprehensive view.",
+        description: "Use only when you do not know which specific Bible book contains the answer. Get a page of text from the entire Bible in one document for a broad search. If the relevant book is known, use get_book_text instead.",
         schema: z.object({pageNumber: z.string().describe("The page number of the Bible you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the Bible text. If you want to progress through the entire Bible text you can call this tool multiple times with incrementing page numbers until the desired result is found. Start at \"1\" and increment. This value cannot be greater than 1473.")}),
     }
 

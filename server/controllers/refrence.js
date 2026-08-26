@@ -8,7 +8,7 @@ router.post("/", async (req, res) => {
     try {
         const response = await deepAgent.invoke(
             {messages: [{ role: "user", content: userPrompt }],}, 
-            {configurable: { thread_id: "new-testament-search" } },
+            {configurable: { thread_id: "new-search" } },
         );
         console.log("Agent response:", response);
         const finalMessage = response.messages[response.messages.length - 1];
