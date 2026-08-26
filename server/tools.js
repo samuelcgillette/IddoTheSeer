@@ -89,7 +89,7 @@ export const getBookText = tool(
     async ({ bookAbriviation, pageNumber }) => {
         console.log(`getting ${bookAbriviation}`)
         const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
-        text = await parser.getText({partial: [pageNumber]});
+        const text = await parser.getText({partial: [Number(pageNumber)]});
         parser.destroy();
         return text;
     },
@@ -98,7 +98,7 @@ export const getBookText = tool(
         description: "Get the text of a bible book using the abreviation from get_abriviation_tool. Do not insert a book abreviation that is not from the get_abriviation_tool.",
         schema: z.object({
             bookAbriviation: z.string().describe("The abreviation recived from get_abriviation_tool. It must be all caps and the correct abreviation for the book you are trying to get the text for. ex MAT for Matthew, JHN for John, etc. Exact abreviations are found in the get_abriviation_tool."),
-            pageNumber: z.number().describe("The page number of the book you want to get the text for. The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the book text. If you want to progress through the entire book text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at one and increment. This number can not be greater than the total number of pages in the book.")
+            pageNumber: z.string().describe("The page number of the book you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the book text. If you want to progress through the entire book text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at \"1\" and increment. This value can not be greater than the total number of pages in the book.")
         }),
     }
 );
@@ -109,7 +109,7 @@ export const getNumberOfPages = tool(
         const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
         const result = await parser.getInfo({ parsePageInfo: true }); 
         parser.destroy();
-        return Number(result.total);
+        return result.total
     },
     {
         name: "get_number_of_pages",
