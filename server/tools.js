@@ -2,7 +2,10 @@ import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { PDFParse } from 'pdf-parse';
 
-export const getAbriviationTool = tool(
+const BOOK_ABBREVIATION_DESCRIPTION = "All-caps abbreviation returned by get_abbreviation, e.g. MAT for Matthew.";
+const pageNumberDescription = (maxPage) => `PDF page number as a numeric string from \"1\" to \"${maxPage}\".`;
+
+export const getAbbreviation = tool(
     async ({ bookTitle }) => {
         console.log(`\n[System] Executing tool for book: ${bookTitle}...`);
         const bookTitles = {
@@ -77,45 +80,45 @@ export const getAbriviationTool = tool(
         return bookTitles[bookTitle] ;
     },
     {
-        name: "get_abriviation_tool",
-        description: "Get the correct abreviation for a bible book title",
+        name: "get_abbreviation",
+        description: "Get the official abbreviation for a Bible book.",
         schema: z.object({
-            bookTitle: z.string().describe("The bible book title e.g., Matthew")
+            bookTitle: z.string().describe("Bible book name, e.g. Matthew.")
         }),
     }
 );
 
 export const getBookText = tool(
-    async ({ bookAbriviation, pageNumber }) => {
-        console.log(`getting ${bookAbriviation}`)
-        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
+    async ({ bookAbbreviation, pageNumber }) => {
+        console.log(`getting ${bookAbbreviation}`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbbreviation}.pdf` });
         const text = await parser.getText({partial: [Number(pageNumber)]});
         parser.destroy();
         return text;
     },
     {
         name: "get_book_text",
-        description: "Get the text of a bible book using the abreviation from get_abriviation_tool. Do not insert a book abreviation that is not from the get_abriviation_tool.",
+        description: "Get one PDF page from a specific Bible book using an abbreviation from get_abbreviation.",
         schema: z.object({
-            bookAbriviation: z.string().describe("The abreviation recived from get_abriviation_tool. It must be all caps and the correct abreviation for the book you are trying to get the text for. ex MAT for Matthew, JHN for John, etc. Exact abreviations are found in the get_abriviation_tool."),
-            pageNumber: z.string().describe("The page number of the book you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the book text. If you want to progress through the entire book text you can call this tool multiple times with incrementing page numbers until the desire result is found. Start at \"1\" and increment. This value can not be greater than the total number of pages in the book.")
+            bookAbbreviation: z.string().describe(BOOK_ABBREVIATION_DESCRIPTION),
+            pageNumber: z.string().describe("PDF page number as a numeric string; start at \"1\" and increment as needed.")
         }),
     }
 );
 
 export const getNumberOfPages = tool(
-    async ({ bookAbriviation }) => {
-        console.log(`getting number of pages for ${bookAbriviation}`)
-        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbriviation}.pdf` });
+    async ({ bookAbbreviation }) => {
+        console.log(`getting number of pages for ${bookAbbreviation}`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbbreviation}.pdf` });
         const result = await parser.getInfo({ parsePageInfo: true }); 
         parser.destroy();
         return result.total
     },
     {
         name: "get_number_of_pages",
-        description: "Get the number of pages in a bible book using the abreviation from get_abriviation_tool. Do not insert a book abreviation that is not from the get_abriviation_tool.",
+        description: "Get the total PDF page count for a specific Bible book.",
         schema: z.object({
-            bookAbriviation: z.string().describe("The abreviation recived from get_abriviation_tool. It must be all caps and the correct abreviation for the book you are trying to get the text for. ex MAT for Matthew, JHN for John, etc. Exact abreviations are only found in the get_abriviation_tool.")
+            bookAbbreviation: z.string().describe(BOOK_ABBREVIATION_DESCRIPTION)
         }),
     }
 );
@@ -135,9 +138,9 @@ export const getAllNewTestament = tool(
     },
     {
         name: "get_all_new_testament",
-        description: "Use only when you do not know which specific Bible book contains the answer. Get a page of text from all New Testament books in one document for a broad search. If the relevant book is known, use get_book_text instead.",
+        description: "Broad search only when the specific Bible book is unknown; get one PDF page from the New Testament.",
         schema: z.object({
-            pageNumber: z.string().describe("The page number of the New Testament you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the New Testament text. If you want to progress through the entire New Testament text you can call this tool multiple times with incrementing page numbers until the desired result is found. Start at \"1\" and increment. This value cannot be greater than 479.")
+            pageNumber: z.string().describe(pageNumberDescription(479))
         }),
     }
 );
@@ -157,9 +160,9 @@ export const getOldTestament = tool(
     },
     {
         name: "get_old_testament",
-        description: "Use only when you do not know which specific Bible book contains the answer. Get a page of text from all Old Testament books in one document for a broad search. If the relevant book is known, use get_book_text instead.",
+        description: "Broad search only when the specific Bible book is unknown; get one PDF page from the Old Testament.",
         schema: z.object({
-            pageNumber: z.string().describe("The page number of the Old Testament you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the Old Testament text. If you want to progress through the entire Old Testament text you can call this tool multiple times with incrementing page numbers until the desired result is found. Start at \"1\" and increment. This value cannot be greater than 1107.")
+            pageNumber: z.string().describe(pageNumberDescription(1107))
         }),
     }
 );
@@ -179,8 +182,8 @@ export const getAllBible = tool(
     },
     {
         name: "get_all_bible",
-        description: "Use only when you do not know which specific Bible book contains the answer. Get a page of text from the entire Bible in one document for a broad search. If the relevant book is known, use get_book_text instead.",
-        schema: z.object({pageNumber: z.string().describe("The page number of the Bible you want to get the text for, provided as a numeric string (for example \"1\", \"2\", \"3\"). The page number is the page number in the PDF document. It is not the chapter or verse number. The page number is used to get a specific section of the Bible text. If you want to progress through the entire Bible text you can call this tool multiple times with incrementing page numbers until the desired result is found. Start at \"1\" and increment. This value cannot be greater than 1473.")}),
+        description: "Broad search only when the specific Bible book is unknown; get one PDF page from the entire Bible.",
+        schema: z.object({pageNumber: z.string().describe(pageNumberDescription(1473))}),
     }
 
 
