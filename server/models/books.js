@@ -69,7 +69,7 @@ export function getAbbreviation(bookTitle) {
         Jude: 'JUD',
         Revelation: 'REV',
         'New Testament': 'nt',
-        'Old Testament': 'ot',
+        'Old Testament': 'all',
         'Bible': 'all'
     }
     console.log(`\n[System] Found abbreviation: ${bookTitles[bookTitle]} for book: ${bookTitle}`);
