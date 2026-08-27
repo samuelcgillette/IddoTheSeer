@@ -3,7 +3,11 @@ import { z } from "zod";
 import { PDFParse } from 'pdf-parse';
 
 const BOOK_ABBREVIATION_DESCRIPTION = "All-caps abbreviation returned by get_abbreviation, e.g. MAT for Matthew.";
-const pageNumberDescription = (maxPage) => `PDF page number as a numeric string from \"1\" to \"${maxPage}\".`;
+// Coerces numbers to strings automatically if the LLM forgets to pass a string literal
+const flexiblePageNumberSchema = (maxPage) => z
+  .union([z.string(), z.number()])
+  .transform((val) => String(val))
+  .describe(`The PDF page number to fetch. Must be a numeric value from "1" to "${maxPage}". Always start at "1" and increment sequentially.`);
 
 export const getAbbreviation = tool(
     async ({ bookTitle }) => {
@@ -83,15 +87,15 @@ export const getAbbreviation = tool(
         name: "get_abbreviation",
         description: "Get the official abbreviation for a Bible book.",
         schema: z.object({
-            bookTitle: z.string().describe("Bible book name, e.g. Matthew.")
+            bookTitle: z.string().describe("Bible book name spelled out completely, e.g. Matthew.")
         }),
     }
 );
 
 export const getBookText = tool(
-    async ({ bookAbbreviation, pageNumber }) => {
-        console.log(`getting ${bookAbbreviation}`)
-        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbbreviation}.pdf` });
+    async ({ abbr, pageNumber }) => {
+        console.log(`getting ${abbr}`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });
         const text = await parser.getText({partial: [Number(pageNumber)]});
         parser.destroy();
         return text;
@@ -100,25 +104,25 @@ export const getBookText = tool(
         name: "get_book_text",
         description: "Get one PDF page from a specific Bible book using an abbreviation from get_abbreviation.",
         schema: z.object({
-            bookAbbreviation: z.string().describe(BOOK_ABBREVIATION_DESCRIPTION),
-            pageNumber: z.string().describe("PDF page number as a numeric string; start at \"1\" and increment as needed.")
+            abbr: z.string().describe(BOOK_ABBREVIATION_DESCRIPTION),
+            pageNumber: z.union([z.string(), z.number()]).transform(val => String(val)).describe("PDF page number as a numeric string; start at \"1\" and increment as needed.")
         }),
     }
 );
 
 export const getNumberOfPages = tool(
-    async ({ bookAbbreviation }) => {
-        console.log(`getting number of pages for ${bookAbbreviation}`)
-        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${bookAbbreviation}.pdf` });
+    async ({ abbr }) => {
+        console.log(`getting number of pages for ${abbr}`)
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });
         const result = await parser.getInfo({ parsePageInfo: true }); 
         parser.destroy();
-        return result.total
+        return String(result.total)
     },
     {
         name: "get_number_of_pages",
         description: "Get the total PDF page count for a specific Bible book.",
         schema: z.object({
-            bookAbbreviation: z.string().describe(BOOK_ABBREVIATION_DESCRIPTION)
+            abbr: z.string().describe(BOOK_ABBREVIATION_DESCRIPTION)
         }),
     }
 );
@@ -140,7 +144,7 @@ export const getAllNewTestament = tool(
         name: "get_all_new_testament",
         description: "Broad search only when the specific Bible book is unknown; get one PDF page from the New Testament.",
         schema: z.object({
-            pageNumber: z.string().describe(pageNumberDescription(479))
+            pageNumber: flexiblePageNumberSchema(479) 
         }),
     }
 );
@@ -162,7 +166,7 @@ export const getOldTestament = tool(
         name: "get_old_testament",
         description: "Broad search only when the specific Bible book is unknown; get one PDF page from the Old Testament.",
         schema: z.object({
-            pageNumber: z.string().describe(pageNumberDescription(1107))
+            pageNumber: flexiblePageNumberSchema(1107)
         }),
     }
 );
@@ -183,7 +187,7 @@ export const getAllBible = tool(
     {
         name: "get_all_bible",
         description: "Broad search only when the specific Bible book is unknown; get one PDF page from the entire Bible.",
-        schema: z.object({pageNumber: z.string().describe(pageNumberDescription(1473))}),
+        schema: z.object({pageNumber: flexiblePageNumberSchema(1473)}),
     }
 
 
