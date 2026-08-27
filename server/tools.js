@@ -157,7 +157,7 @@ export const getOldTestament = tool(
             throw new Error("Page number must be between 1 and 1107 for the Old Testament.");
         }
         console.log(`getting all old testament books`)
-        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_ot.pdf` });
+        const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_all.pdf` });
         const page = await parser.getText({partial: [numericPageNumber]});
         parser.destroy();
         return page;
