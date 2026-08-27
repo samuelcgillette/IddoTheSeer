@@ -75,3 +75,19 @@ export function getAbbreviation(bookTitle) {
     console.log(`\n[System] Found abbreviation: ${bookTitles[bookTitle]} for book: ${bookTitle}`);
     return bookTitles[bookTitle] ;
 }
+
+export async function getBookText(abbr,pageNumber) {
+    console.log(`getting ${abbr}`)
+    const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });
+    const text = await parser.getText({partial: [Number(pageNumber)]});
+    parser.destroy();
+    return text;
+};
+
+export async function getNumberOfPages(abbr) {
+    console.log(`getting number of pages for ${abbr}`)
+    const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });
+    const result = await parser.getInfo({ parsePageInfo: true }); 
+    parser.destroy();
+    return String(result.total)
+}
