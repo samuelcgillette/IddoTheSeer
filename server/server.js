@@ -48,7 +48,7 @@ Format references as Book Chapter:Verse, for example John 13:32-35. In get_book_
 const llm = new ChatOllama({
   model: "llama3.1:8b",
   temperature: 0,
-  timeout: 600_000, // 10 minutes
+  timeout: 120_000_000, // 20 minutes
   maxTokens: 128000,
 });
 
