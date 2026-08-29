@@ -6,10 +6,13 @@ const router = express.Router();
 
 router.post("/", async (req, res) => {
     const { userPrompt } = req.body;
+    console.log(`\n[System] Received user prompt: ${userPrompt}`);
+    console.log(`\n[System] Received user prompt: ${userPrompt}`);
     
     try {
         // use agent to get book 
         const bookTitle = await getBookTitleFromAi(userPrompt, BookTitleAgent);
+        console.log(`\n[System] Book title from AI: ${bookTitle}`);
         // get proper abreviation
         const abbreviation = getAbbreviation(bookTitle.trim());
         const maxNumPages = await getNumberOfPages(abbreviation);
@@ -20,6 +23,7 @@ router.post("/", async (req, res) => {
             const pageText = await getBookText(abbreviation,currentPageNum);
             //send the page
             const aiResponse = await checkBookPage(pageText, PageCheckerAgent, userPrompt);
+            console.log(`\n[System] AI response for page ${currentPageNum}: ${aiResponse}`);
             //if it isnt the response loop again
             if ( aiResponse.includes('This is the place.')) {
                 return res.json({ AIResponse: aiResponse });
