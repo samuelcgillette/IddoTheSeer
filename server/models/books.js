@@ -1,3 +1,4 @@
+import { PDFParse } from "pdf-parse";
 
 export function getAbbreviation(bookTitle) { 
     console.log(`\n[System] Getting book: ${bookTitle}...`);
@@ -81,7 +82,7 @@ export async function getBookText(abbr,pageNumber) {
     const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });
     const text = await parser.getText({partial: [Number(pageNumber)]});
     parser.destroy();
-    return text;
+    return text.pages[0].text;
 };
 
 export async function getNumberOfPages(abbr) {

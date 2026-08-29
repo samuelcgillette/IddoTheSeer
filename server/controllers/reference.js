@@ -7,7 +7,6 @@ const router = express.Router();
 router.post("/", async (req, res) => {
     const { userPrompt } = req.body;
     console.log(`\n[System] Received user prompt: ${userPrompt}`);
-    console.log(`\n[System] Received user prompt: ${userPrompt}`);
     
     try {
         // use agent to get book 

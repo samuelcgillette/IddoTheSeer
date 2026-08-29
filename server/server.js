@@ -9,6 +9,7 @@ import { loadUser } from "./middleware/auth.js";
 import authController from "./controllers/auth.js";
 import { ChatOllama } from "@langchain/ollama";
 import { createDeepAgent } from "deepagents";
+import { createAgent } from "langchain";
 import referenceController from "./controllers/reference.js";
 import { MemorySaver } from "@langchain/langgraph";
 
@@ -32,8 +33,8 @@ app.use(cookieParser());
 app.use(loadUser);
 
 // Initialize AI model and prompts
-const BOOK_TITLE_SYSTEM_PROMPT = `A Bible book is one of the canonical books of the Bible, such as Genesis, Psalms, Matthew, or Revelation. Find the Bible book named or clearly requested in the user's prompt. Return only the complete book title.If the user wants the entire Bible, return "Bible". If the user wants the Old Testament, return "Old Testament". If the user wants the New Testament, return "New Testament". If you cannot find a book, return "Unknown".`;
-const PAGE_CHECKER_SYSTEM_PROMPT = `Compare the user's request with the provided Bible page. If the page contains the requested scripture, start the response with exactly "This is the place." Then include the matching reference and quote the scripture exactly as it appears, without summarizing. If it does not contain the request, say that it is not on this page.`;
+const BOOK_TITLE_SYSTEM_PROMPT = `You are only a Bible book title extractor. You must not use your training data, memory, or any general knowledge to guess a scripture, chapter, verse, or book. Use only the exact words in the user's message and nothing else. If the user mentions or clearly requests a Bible book, return only that book title as plain text with no explanation, no punctuation beyond the title itself, and no extra words. Examples: "Luke", "Genesis", "Psalms", "Bible", "Old Testament", "New Testament". If no book is clearly present, return "Unknown". Do not return chapter names, verse references, scripture text, or anything besides a book title.`;
+const PAGE_CHECKER_SYSTEM_PROMPT = `Compare the user's request with the provided Bible page. You must rely only on the information supplied by the user and the page text given to you. Do not use your training data, prior knowledge, or assumptions to infer scripture content. The scripture provided by the user does not need to be an exact match but you should be farily confident it is the one they are looking for.If the page contains the requested scripture, start the response with exactly "This is the place." Then include the matching reference and quote the scripture exactly as it appears, without summarizing. If it does not contain the request, say that it is not on this page. Even if you know the answer, do not provide it unless it is on the page. If you cannot find the scripture, say that it is not on this page.`;
 
 const llm = new ChatOllama({
   model: "llama3.1:8b",
@@ -43,17 +44,16 @@ const llm = new ChatOllama({
 });
 
 // Create the agents
-const checkpointer = new MemorySaver();
-export const BookTitleAgent = createDeepAgent({
+export const BookTitleAgent = createAgent({
   model: llm,
+  tools: [],
   systemPrompt: BOOK_TITLE_SYSTEM_PROMPT,
-  checkpointer,
 });
 
-export const PageCheckerAgent = createDeepAgent({
+export const PageCheckerAgent = createAgent({
   model: llm,
+  tools: [],
   systemPrompt: PAGE_CHECKER_SYSTEM_PROMPT,
-  checkpointer,
 });
 
 // API Routes
