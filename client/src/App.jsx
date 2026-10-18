@@ -9,13 +9,13 @@ function App() {
   const { loading } = useAuth();
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <p className="app-loading">Opening the scrolls…</p>;
   }
 
   return (
     <>
       <Navbar />
-      <main className="container">
+      <main className="app-main">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />

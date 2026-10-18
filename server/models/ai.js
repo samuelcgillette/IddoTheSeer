@@ -7,10 +7,17 @@ export async function getBookTitleFromAi(userPrompt, BookTitleAgent) {
     return finalMessage.content;
 }
 
-export async function checkBookPage(bookPage, PageCheckerAgent, userPrompt) {
-    const response = await PageCheckerAgent.invoke(
-        {messages: [{ role: "user", content: `User request:\n${userPrompt}\n\nBible page:\n${bookPage}` }],}
+export async function findMatches(userPrompt, MatchFinderAgent) {
+    // Matches are saved through the save_match tool, so only the tool calls matter here
+    await MatchFinderAgent.invoke(
+        {messages: [{ role: "user", content: userPrompt }],},
+        { recursionLimit: 50 }
     );
-    const finalMessage = response.messages[response.messages.length - 1];
-    return finalMessage.content;
+}
+
+export async function compareMatches(userPrompt, MatchComparerAgent) {
+    // The chosen match is recorded through the choose_match tool
+    await MatchComparerAgent.invoke(
+        {messages: [{ role: "user", content: userPrompt }],}
+    );
 }

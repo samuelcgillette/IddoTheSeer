@@ -85,6 +85,14 @@ export async function getBookText(abbr,pageNumber) {
     return text.pages[0].text;
 };
 
+export async function getBookPages(abbr) {
+    console.log(`getting all pages of ${abbr}`)
+    const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });
+    const result = await parser.getText();
+    await parser.destroy();
+    return result.pages;
+};
+
 export async function getNumberOfPages(abbr) {
     console.log(`getting number of pages for ${abbr}`)
     const parser = new PDFParse({ url: `https://ebible.org/pdf/eng-kjv2006/eng-kjv2006_${abbr}.pdf` });

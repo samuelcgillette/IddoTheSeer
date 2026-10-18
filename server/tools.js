@@ -1,6 +1,7 @@
 import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { PDFParse } from 'pdf-parse';
+import { getBookPages } from "./models/books.js";
 
 const BOOK_ABBREVIATION_DESCRIPTION = "All-caps abbreviation returned by get_abbreviation, e.g. MAT for Matthew.";
 // Coerces numbers to strings automatically if the LLM forgets to pass a string literal
@@ -192,3 +193,106 @@ export const getAllBible = tool(
 
 
 );
+const MAX_PAGES_PER_SEARCH = 4;
+const escapeRegExp = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+// Lowercase letters only, so verse numbers, line breaks and punctuation don't affect quote checks
+const normalizeText = (text) => text.toLowerCase().replace(/[^a-z]+/g, " ").trim();
+
+// Creates the tools for one search request. The match finder saves matches and the match comparer chooses one.
+export function createMatchTools(abbr) {
+    const matches = [];
+    const selection = { match: null, explanation: "" };
+    const shownPages = new Set();
+    let bookPages;
+
+    const getMatchingPages = tool(
+        async ({ keyword }) => {
+            console.log(`\n[System] Searching ${abbr} for: ${keyword}`);
+            bookPages ??= await getBookPages(abbr);
+            const pattern = new RegExp(`\\b${escapeRegExp(keyword.trim())}\\b`, "i");
+            const foundPages = bookPages.filter((page) => pattern.test(page.text));
+            if (foundPages.length === 0) {
+                return `No pages contain "${keyword}". Try a different word or phrase.`;
+            }
+            const newPages = foundPages.filter((page) => !shownPages.has(page.num));
+            if (newPages.length === 0) {
+                return `Every page containing "${keyword}" was already shown earlier.`;
+            }
+            if (newPages.length > MAX_PAGES_PER_SEARCH) {
+                return `"${keyword}" appears on ${newPages.length} pages, which is too many. Try a more specific word or phrase.`;
+            }
+            newPages.forEach((page) => shownPages.add(page.num));
+            console.log(`[System] "${keyword}" found on pages: ${newPages.map((page) => page.num).join(", ")}`);
+            return newPages.map((page) => `--- Page ${page.num} ---\n${page.text}`).join("\n\n");
+        },
+        {
+            name: "get_matching_pages",
+            description: "Search the Bible book for a word or short phrase and return the text of every page that contains it.",
+            schema: z.object({
+                keyword: z.string().describe("A word or short phrase likely to appear in the verse, e.g. \"vine\" or \"living bread\".")
+            }),
+        }
+    );
+
+    const saveMatch = tool(
+        async ({ pageNumber, reference, quote, reason }) => {
+            const page = bookPages?.find((bookPage) => bookPage.num === pageNumber);
+            if (!page || !shownPages.has(page.num)) {
+                return `Page ${pageNumber} has not been returned by get_matching_pages. Only save verses from pages you have been shown.`;
+            }
+            if (/\.\.\.|…/.test(quote)) {
+                return `Do not shorten the quote with "...". Copy the whole verse exactly as it appears on page ${pageNumber} and try again.`;
+            }
+            if (!normalizeText(page.text).includes(normalizeText(quote))) {
+                return `That quote was not found on page ${pageNumber}. Copy the verse text exactly as it appears on the page and try again.`;
+            }
+            matches.push({ pageNumber, reference, quote, reason });
+            console.log(`\n[System] Saved match ${matches.length}: ${reference}`);
+            return `Saved match ${matches.length}: ${reference}`;
+        },
+        {
+            name: "save_match",
+            description: "Save a verse that matches the user's request so it can be compared with the other matches.",
+            schema: z.object({
+                pageNumber: z.union([z.string(), z.number()]).transform((val) => Number(val)).describe("The page number the verse was found on."),
+                reference: z.string().describe("The verse reference, e.g. John 15:1."),
+                quote: z.string().min(10).describe("The whole verse copied exactly as it appears on the page, without shortening."),
+                reason: z.string().describe("One short sentence on why this verse matches the user's request.")
+            }),
+        }
+    );
+
+    const loadMatches = tool(
+        async () => matches.length > 0
+            ? JSON.stringify(matches.map((match, index) => ({ matchNumber: index + 1, ...match })), null, 2)
+            : "No matches were saved.",
+        {
+            name: "load_matches",
+            description: "Load every verse saved as a possible match for the user's request.",
+            schema: z.object({}),
+        }
+    );
+
+    const chooseMatch = tool(
+        async ({ matchNumber, explanation }) => {
+            const match = matches[matchNumber - 1];
+            if (!match) {
+                return `There is no match number ${matchNumber}. Choose a matchNumber from load_matches.`;
+            }
+            selection.match = match;
+            selection.explanation = explanation;
+            console.log(`\n[System] Chose match ${matchNumber}: ${match.reference}`);
+            return `Chose match ${matchNumber}: ${match.reference}`;
+        },
+        {
+            name: "choose_match",
+            description: "Choose the saved match that best answers the user's request.",
+            schema: z.object({
+                matchNumber: z.union([z.string(), z.number()]).transform((val) => Number(val)).describe("The matchNumber from load_matches."),
+                explanation: z.string().describe("One sentence explaining why this verse answers the user's question.")
+            }),
+        }
+    );
+
+    return { matches, selection, finderTools: [getMatchingPages, saveMatch], comparerTools: [loadMatches, chooseMatch] };
+}

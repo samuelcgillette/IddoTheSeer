@@ -34,13 +34,14 @@ app.use(loadUser);
 
 // Initialize AI model and prompts
 const BOOK_TITLE_SYSTEM_PROMPT = `You are only a Bible book title extractor. You must not use your training data, memory, or any general knowledge to guess a scripture, chapter, verse, or book. Use only the exact words in the user's message and nothing else. If the user mentions or clearly requests a Bible book, return only that book title as plain text with no explanation, no punctuation beyond the title itself, and no extra words. Examples: "Luke", "Genesis", "Psalms", "Bible", "Old Testament", "New Testament". If no book is clearly present, return "Unknown". Do not return chapter names, verse references, scripture text, or anything besides a book title.`;
-const PAGE_CHECKER_SYSTEM_PROMPT = `Compare the user's request with the provided Bible page. You must rely only on the information supplied by the user and the page text given to you. Do not use your training data, prior knowledge, or assumptions to infer scripture content. The scripture taken must be very close to the one sent back. Only send a scripture back if you are certain it is the match. If the page contains the requested scripture, start the response with exactly "This is the place." Then include the matching reference and quote the scripture exactly as it appears, without summarizing. If it does not contain the request, say that it is not on this page. Even if you know the answer, do not provide it unless it is on the page. If you cannot find the scripture, say that it is not on this page.`;
+const MATCH_FINDER_SYSTEM_PROMPT = `You find Bible verses that match the user's request. Pick out words or short phrases from the request that are likely to appear in the verse itself, for example "vine" for a question about Jesus calling himself the vine. Do not search for the book name or very common words such as Jesus, God, Lord, or said. Call get_matching_pages once for each word or phrase. Read the pages it returns, and for every verse that matches the user's request, call save_match with the page number, the reference (the chapter is shown in the page header, e.g. John 15:1), the verse copied exactly as it appears on the page, and a short reason. The text is the King James Version, so if a search finds nothing, try other forms of the word (singular or plural) or older wording. If a search returns too many pages, use a more specific phrase. Use only the page text, never your own knowledge of the Bible. When you have finished searching, reply with "Done".`;
+const MATCH_COMPARER_SYSTEM_PROMPT = `You choose the best answer to the user's Bible question. Call load_matches to see the verses that were found as possible matches. Compare each one with the user's request and choose the single best fit. Use only the saved matches; never use your own knowledge of the Bible. Call choose_match with the matchNumber of the best fit and one sentence explaining why it answers the user's question. When you have chosen, reply with "Done".`;
 
 const llm = new ChatOllama({
   model: "gpt-oss:20b",
   temperature: 0,
   timeout: 600_000, // 10 minutes
-  numCtx: 8192, // room for a full Bible page + prompts
+  numCtx: 16384, // room for several searched pages + prompts
   numPredict: 2048, // cap on response length
 });
 
@@ -51,10 +52,17 @@ export const BookTitleAgent = createAgent({
   systemPrompt: BOOK_TITLE_SYSTEM_PROMPT,
 });
 
-export const PageCheckerAgent = createAgent({
+// Created per request because their tools hold that request's matches
+export const createMatchFinderAgent = (tools) => createAgent({
   model: llm,
-  tools: [],
-  systemPrompt: PAGE_CHECKER_SYSTEM_PROMPT,
+  tools,
+  systemPrompt: MATCH_FINDER_SYSTEM_PROMPT,
+});
+
+export const createMatchComparerAgent = (tools) => createAgent({
+  model: llm,
+  tools,
+  systemPrompt: MATCH_COMPARER_SYSTEM_PROMPT,
 });
 
 // API Routes

@@ -1,34 +1,44 @@
-import { useState } from "react";
-import logo from "../assets/logo.png";
+import { useEffect, useRef, useState } from "react";
 import { useSendPrompt } from "../hooks/useSendPrompt.js";
+import { Composer } from "../components/Composer";
+import { EmptyState } from "../components/EmptyState";
+import { SeerReply, SeerSearching } from "../components/SeerReply";
 
 function Home() {
-  const [prompt, setPrompt] = useState("");
-  const [modelResponse, setModelResponse] = useState("");
-  const [trigger, setTrigger] = useState(false);
-  
-  useSendPrompt(prompt,trigger, setModelResponse);
+  const [messages, setMessages] = useState([]);
+  const { sendPrompt, pending } = useSendPrompt();
+  const endRef = useRef(null);
 
-  function handleSubmit(prompt, setModelResponse) {
-    setTrigger(!trigger);
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, pending]);
+
+  async function handleAsk(prompt) {
+    setMessages((prev) => [...prev, { role: "user", text: prompt }]);
+    const reply = await sendPrompt(prompt);
+    setMessages((prev) => [...prev, reply]);
   }
+
   return (
-    <div>
-      <div>
-        <input
-          type="text"
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Enter your prompt..."
-        />
-      </div>
-      <div>
-        <p>{modelResponse}</p>
-      </div>
-      <button onClick={() => handleSubmit(prompt, setModelResponse)}>Submit</button>
-      <div style={{ textAlign: "center" }}>
-        <img src={logo} alt="My App" className="home-logo" />
-      </div>
+    <div className="chat">
+      {messages.length === 0 ? (
+        <EmptyState onPick={handleAsk} />
+      ) : (
+        <ol className="thread">
+          {messages.map((m, i) => (
+            <li key={i}>
+              {m.role === "user" ? (
+                <div className="message message--user"><p>{m.text}</p></div>
+              ) : (
+                <SeerReply text={m.text} error={m.error} />
+              )}
+            </li>
+          ))}
+          {pending && <li><SeerSearching /></li>}
+        </ol>
+      )}
+      <div ref={endRef} />
+      <Composer onSubmit={handleAsk} disabled={pending} />
     </div>
   );
 }

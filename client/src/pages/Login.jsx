@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
 import { useAuth } from "../hooks/useAuth";
+import { SeerMark } from "../components/SeerMark";
 
 function Login() {
   const { user, setUser, redirectUrl, setRedirectUrl } = useAuth();
@@ -42,7 +43,8 @@ function Login() {
 
   return (
     <div className="form-page">
-      <h2>Login</h2>
+      <SeerMark size={72} />
+      <h2>Sign in</h2>
       {error && <p className="error-message">{error}</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -65,12 +67,12 @@ function Login() {
             required
           />
         </div>
-        <button type="submit" className="btn btn-primary">
-          Login
+        <button type="submit" className="btn btn-primary btn-block">
+          Sign in
         </button>
       </form>
-      <p>
-        Don't have an account? <Link to="/register">Register here</Link>
+      <p className="form-switch">
+        Don't have an account? <Link to="/register">Create one</Link>
       </p>
     </div>
   );

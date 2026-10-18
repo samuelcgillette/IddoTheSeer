@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router";
 import { useAuth } from "../hooks/useAuth";
-import logo from "../assets/logo.png";
+import { SeerMark } from "./SeerMark";
 
 function Navbar() {
   const { user, setUser } = useAuth();
@@ -19,22 +19,24 @@ function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <Link to="/"><img src={logo} alt="My App" className="navbar-logo" /></Link>
+        <Link to="/">
+          <SeerMark size={34} />
+          <span className="navbar-wordmark">Iddo the Seer</span>
+        </Link>
       </div>
       {!isAuthPage && (
         <div className="navbar-links">
-          <Link to="/">Home</Link>
           {user ? (
             <>
-              <span className="navbar-user">Hi, {user.username}</span>
+              <span className="navbar-user">{user.username}</span>
               <button onClick={handleLogout} className="btn btn-logout">
-                Logout
+                Sign out
               </button>
             </>
           ) : (
             <>
-              <Link to="/login">Login</Link>
-              <Link to="/register">Register</Link>
+              <Link to="/login">Sign in</Link>
+              <Link to="/register">Create account</Link>
             </>
           )}
         </div>
