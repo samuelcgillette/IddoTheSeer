@@ -16,7 +16,14 @@ function Home() {
   async function handleAsk(prompt) {
     setMessages((prev) => [...prev, { role: "user", text: prompt }]);
     const reply = await sendPrompt(prompt);
-    setMessages((prev) => [...prev, reply]);
+    setMessages((prev) => [...prev, { ...reply, prompt }]);
+  }
+
+  // Drop the failed reply and send the same question again
+  async function handleRetry(index, prompt) {
+    setMessages((prev) => prev.filter((_, i) => i !== index));
+    const reply = await sendPrompt(prompt);
+    setMessages((prev) => [...prev, { ...reply, prompt }]);
   }
 
   return (
@@ -30,7 +37,11 @@ function Home() {
               {m.role === "user" ? (
                 <div className="message message--user"><p>{m.text}</p></div>
               ) : (
-                <SeerReply text={m.text} error={m.error} />
+                <SeerReply
+                  text={m.text}
+                  error={m.error}
+                  onRetry={!pending && i === messages.length - 1 ? () => handleRetry(i, m.prompt) : undefined}
+                />
               )}
             </li>
           ))}

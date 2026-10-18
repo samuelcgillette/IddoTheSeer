@@ -33,7 +33,7 @@ export function Composer({ onSubmit, disabled }) {
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Describe the passage and name its book…"
+        placeholder="Describe the passage and name its book"
       />
       <button type="submit" className="btn btn-primary" disabled={disabled || !prompt.trim()}>
         Ask

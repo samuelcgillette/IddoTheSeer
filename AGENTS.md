@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this r
 
 ## Project Overview
 
-Full-stack starter app: React 19 frontend (Vite) + Express backend + PostgreSQL. Includes session-based auth (bcrypt + httpOnly cookies) out of the box.
+Full-stack starter app: React 19 frontend (Vite) + Express backend + PostgreSQL.
 
 ## Commands
 
@@ -20,9 +20,7 @@ For production, build the client with `npx vite build client` — Express serves
 
 **Dev server wiring:** Express (port 3000) serves a Handlebars template that loads scripts from the Vite dev server (port 5173). API requests go directly to Express; asset/module requests are proxied to Vite. In production, Express serves static files from `client/dist` instead.
 
-**Auth flow:** Cookie-based sessions stored in a `sessions` table. The `loadUser` middleware runs on every request, attaching `req.user` from the session cookie. Protected API routes use `requireAuth` middleware. On the client, `AuthContext` holds user state and `useRequireUser` redirects unauthenticated users to login.
-
-**Database migrations:** SQL files in `server/migrations/` numbered sequentially (e.g., `001_users.sql`). The custom runner in `server/migrate.js` tracks applied migrations in a `schema_migrations` table and runs each in a transaction.
+**Database migrations:** SQL files in `server/migrations/` numbered sequentially (e.g., `003_drop_auth.sql`). The custom runner in `server/migrate.js` tracks applied migrations in a `schema_migrations` table and runs each in a transaction.
 
 ## React Guidelines
 
@@ -33,20 +31,20 @@ For production, build the client with `npx vite build client` — Express serves
 - Co-locate related files (component, styles, tests) rather than grouping by file type.
 
 ### Hooks
-- Extract reusable logic into custom hooks (e.g., `useAuth`, `useRequireUser`). A custom hook is the right call whenever two or more components share stateful logic.
+- Extract reusable logic into custom hooks (e.g., `useSendPrompt`). A custom hook is the right call whenever two or more components share stateful logic.
 - Name custom hooks with the `use` prefix and place them in `client/src/hooks/`.
 - Keep hooks focused — one concern per hook. Compose smaller hooks together rather than building monolithic ones.
 - Use the built-in hooks correctly: `useState` for local state, `useEffect` for side effects and syncing with external systems, `useRef` for values that persist across renders without triggering re-renders.
 
 ### State Management
 - Lift state to the nearest common ancestor that needs it — no higher.
-- Use React Context (like `AuthContext`) for truly global state that many components need. Don't reach for context when prop drilling through 1-2 levels is simpler.
+- Use React Context for truly global state that many components need. Don't reach for context when prop drilling through 1-2 levels is simpler.
 - Keep server state (fetched data) separate from UI state (form inputs, toggles). Fetch data in hooks or effects, not inline in render logic.
 
 ### General Patterns
 - Use `function` declarations for components and named exports where possible.
 - Handle loading and error states explicitly — don't let components render in an undefined state.
-- Prefer controlled form inputs (value + onChange) as shown in the existing Login/Register pages.
+- Prefer controlled form inputs (value + onChange) as shown in `Composer`.
 
 ## Backend Guidelines
 
@@ -66,7 +64,6 @@ For production, build the client with `npx vite build client` — Express serves
 
 ## Key Conventions
 
-- Server routes mount under `/api/` (e.g., `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`)
+- Server routes mount under `/api/` (e.g., `/api/reference`)
 - Client routing uses React Router v7 — import from `react-router`, not `react-router-dom`
 - Environment variables: copy `.env.example` to `.env` and configure DB credentials
-- Client pages that require auth call the `useRequireUser()` hook

@@ -1,29 +1,32 @@
-import { SeerMark } from "./SeerMark";
+import { ScrollMark } from "./ScrollMark";
 
 const SUGGESTIONS = [
-  "Where in John does Jesus call himself the vine?",
-  "In Genesis, where does God set a rainbow in the cloud?",
-  "Which psalm says the Lord is my shepherd?",
+  { label: "Where in John is the true vine?", prompt: "Where in John does Jesus call himself the vine?" },
+  { label: "The rainbow in Genesis", prompt: "In Genesis, where does God set the rainbow in the cloud?" },
+  { label: "The Lord is my shepherd", prompt: "Which psalm says the Lord is my shepherd?" },
 ];
 
 export function EmptyState({ onPick }) {
   return (
     <section className="empty-state">
-      <SeerMark size={168} />
-      <h1 className="empty-title">Iddo the Seer</h1>
+      <span className="empty-mark">
+        <ScrollMark size={72} strokeWidth={1.1} />
+      </span>
+      <figure className="empty-quote">
+        <blockquote>Ask, and it shall be given you; seek, and ye shall find.</blockquote>
+        <figcaption>Matthew 7:7</figcaption>
+      </figure>
       <p className="empty-lede">
-        Describe a passage you half remember and name its book. Iddo will find
-        the verse in the King James Bible.
+        Describe a passage you half remember and name its book. Iddo searches
+        the King James Bible and quotes it back exactly.
       </p>
-      <ul className="suggestions">
+      <div className="suggestions">
         {SUGGESTIONS.map((s) => (
-          <li key={s}>
-            <button type="button" className="suggestion" onClick={() => onPick(s)}>
-              {s}
-            </button>
-          </li>
+          <button key={s.label} type="button" className="suggestion" onClick={() => onPick(s.prompt)}>
+            {s.label}
+          </button>
         ))}
-      </ul>
+      </div>
     </section>
   );
 }

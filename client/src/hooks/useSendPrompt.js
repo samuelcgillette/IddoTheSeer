@@ -14,7 +14,7 @@ export function useSendPrompt() {
       });
       const data = await response.json();
       if (!response.ok) {
-        return { role: "seer", error: true, text: data.error || "The search failed. Try asking again." };
+        return { role: "seer", error: true, text: "Iddo couldn't finish that search. Ask again, or try different wording." };
       }
       return { role: "seer", text: data.AIResponse };
     } catch (error) {
