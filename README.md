@@ -1,6 +1,6 @@
 # Iddo the Seer
 
-Iddo is a work-in-progress AI assistant for finding Bible verses you half remember. Describe a verse in your own words, for example *"In John, where does Jesus call himself the vine?"*, and Iddo searches the King James text and returns the reference, the full verse, and a one-sentence reason it fits.
+This is my first AI agent project called Iddo the seer. Iddo is a work-in-progress AI assistant for finding Bible verses you half remember. Describe a verse in your own words, for example *"In John, where does Jesus call himself the vine?"*, and Iddo searches the King James text and returns the reference, the full verse, and a one-sentence reason it fits.
 
 Iddo only finds references. It does not interpret scripture, write talks or lessons, or answer from the model's own knowledge. Every verse it returns is copied from the source text and checked against it.
 
