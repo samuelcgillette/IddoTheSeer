@@ -37,10 +37,11 @@ const BOOK_TITLE_SYSTEM_PROMPT = `You are only a Bible book title extractor. You
 const PAGE_CHECKER_SYSTEM_PROMPT = `Compare the user's request with the provided Bible page. You must rely only on the information supplied by the user and the page text given to you. Do not use your training data, prior knowledge, or assumptions to infer scripture content. The scripture taken must be very close to the one sent back. Only send a scripture back if you are certain it is the match. If the page contains the requested scripture, start the response with exactly "This is the place." Then include the matching reference and quote the scripture exactly as it appears, without summarizing. If it does not contain the request, say that it is not on this page. Even if you know the answer, do not provide it unless it is on the page. If you cannot find the scripture, say that it is not on this page.`;
 
 const llm = new ChatOllama({
-  model: "llama3.1:8b",
+  model: "gpt-oss:20b",
   temperature: 0,
   timeout: 600_000, // 10 minutes
-  maxTokens: 128000,
+  numCtx: 8192, // room for a full Bible page + prompts
+  numPredict: 2048, // cap on response length
 });
 
 // Create the agents
